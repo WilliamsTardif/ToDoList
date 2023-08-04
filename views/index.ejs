@@ -1,0 +1,23 @@
+<%- include("partials/header.ejs") %>
+
+<div class="page">
+    <h1 class="today">Today</h1>
+        
+    <div class="todo" id="checklist">
+        <input checked="" value="1" name="r" type="checkbox" id="01">
+        <label for="01">Bread</label>
+        <input value="2" name="r" type="checkbox" id="02">
+        <label for="02">Cheese</label>
+        <input value="3" name="r" type="checkbox" id="03">
+        <label for="03">Coffee</label>
+    </div>
+</div>
+<form>
+      <div class="mb-3">
+        <label for="exampleInputPassword1" class="form-label">Task name</label>
+        <input type="text" class="form-control" id="exampleInputPassword1">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<%- include("partials/footer.ejs") %>
