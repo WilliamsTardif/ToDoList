@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose"
 
 const app = express();
 const port = 3000;
@@ -8,22 +9,61 @@ var workList = [];
 var futureList = [];
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"))
+app.use(express.static("public"));
+
+mongoose.connect("mongodb://127.0.0.1:27017/todolistDB");
+
+const itemSchema = mongoose.Schema ({
+    name: {
+        type: String,
+        required: [true, 'Must have a name to be created.']
+    }
+});
+
+const Item = mongoose.model("item", itemSchema);
+
+// const programming = Item ({
+//     name: "Learning programmation"
+// });
+
+// const play = Item ({
+//     name: "Play video games"
+// });
+
+// const training = Item ({
+//     name: "Go training"
+// });
+
+// programming.save();
+// play.save();
+// training.save();
 
 app.get("/", (req, res) => {
     var date = getTodayDate();
     todayDate = date;
-    res.render(
-        "index.ejs",
-        {
-            date: todayDate,
-            items: todayList,
-        }
-        );
+    const result = Item.find().exec();
+    result.then((data) => {
+        console.log(data);
+        res.render("index.ejs",
+            {
+                date: todayDate,
+                items: data,
+            }
+        )
+    }); 
 });
 
 app.post("/add", (req, res) => {
-    todayList.push(req.body.task);
+    try {
+        const newItem = Item ({
+            name: req.body.task
+        });
+    
+        newItem.save();    
+    } catch(e) {
+        console.log(e.message);
+    }
+    
     res.redirect('/')
 });
 

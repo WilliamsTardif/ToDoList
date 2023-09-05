@@ -5,8 +5,10 @@
       
   <div class="todo" id="checklist">
     <% items.forEach(function(item) { %>
-      <input id="<%= item %>" name="r" type="checkbox">
-      <label for="<%= item %>"><%= item %></label>
+      <form action="/" method="post">
+        <input id="<%= item.name %>" name="r" type="checkbox">
+        <label for="<%= item.name %>"><%= item.name %></label>
+      </form>
     <% }) %>
   </div>
   
