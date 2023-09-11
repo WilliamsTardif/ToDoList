@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import _ from "lodash";
 
 const app = express();
-const port = 3000;
 var title = "Today";
 
 app.use(express.urlencoded({ extended: true }));
@@ -123,6 +122,11 @@ function sleep(ms) {
     });
 }
 
+let port = process.env.PORT;
+if(port == null || port == "") {
+    port = 3000
+}
+
 app.listen(port, (req, res) => {
-    console.log(`Listen on port: ${port}`);
+    console.log(`Server listen on port: ${port}`);
 });
