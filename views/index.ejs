@@ -1,13 +1,14 @@
 <%- include("partials/header.ejs") %>
 
 <div class="page">
-  <h1 class="topic"><%= date  %></h1>
+  <h1 class="topic"><%= listName  %></h1>
       
   <div class="todo" id="checklist">
     <% items.forEach(function(item) { %>
-      <form action="/" method="post">
-        <input id="<%= item.name %>" name="r" type="checkbox">
+      <form class="todoItem" action="/delete" method="post">
+        <input id="<%= item.name %>" name="checkbox" value="<%= item._id %>" onChange="this.form.submit()" type="checkbox">
         <label for="<%= item.name %>"><%= item.name %></label>
+        <input type="hidden" name="listName" value="<%= listName %>" ></input>
       </form>
     <% }) %>
   </div>
@@ -17,7 +18,7 @@
       <input name="task" type="text" class="form-control" placeholder="New task">
     </div>
     <div class="container addButton">
-      <button type="submit" class="button" >
+      <button type="submit" class="button" name="list" value="<%= listName %>" >
         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
           <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
         </svg>

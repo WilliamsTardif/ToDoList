@@ -1,151 +1,128 @@
 import express from "express";
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import _ from "lodash";
 
 const app = express();
 const port = 3000;
-var todayDate = "";
-var todayList = ["Bread", "Cheese", "coffee"];
-var workList = [];
-var futureList = [];
+var title = "Today";
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://127.0.0.1:27017/todolistDB");
+mongoose.connect("mongodb+srv://admin-williams:Test123@cluster0.0pdib7y.mongodb.net/todolistDB");
 
 const itemSchema = mongoose.Schema ({
-    name: {
-        type: String,
-        required: [true, 'Must have a name to be created.']
-    }
+    name: String
 });
 
 const Item = mongoose.model("item", itemSchema);
 
-// const programming = Item ({
-//     name: "Learning programmation"
-// });
+const listItemScehma = mongoose.Schema ({
+    name: String,
+    items: [itemSchema]
+});
 
-// const play = Item ({
-//     name: "Play video games"
-// });
+const List = mongoose.model('list', listItemScehma)
 
-// const training = Item ({
-//     name: "Go training"
-// });
+
+
+
+const programming = Item ({
+    name: "Learning programmation"
+});
+
+const play = Item ({
+    name: "Play video games"
+});
+
+const training = Item ({
+    name: "Go training"
+});
+
+const defaultItem = [programming, play, training];
 
 // programming.save();
 // play.save();
 // training.save();
 
 app.get("/", (req, res) => {
-    var date = getTodayDate();
-    todayDate = date;
     const result = Item.find().exec();
     result.then((data) => {
-        console.log(data);
-        res.render("index.ejs",
-            {
-                date: todayDate,
-                items: data,
-            }
-        )
+        renderIndex(res, title, data);
     }); 
 });
 
+app.get("/:customListName", (req, res) => {
+    const customListName = _.capitalize(req.params.customListName);
+
+    const result = List.findOne({name: customListName}).exec();
+    result.then((data) => {
+        if (data == null) {
+            const list = new List({
+                name: customListName,
+                items: defaultItem
+            });
+        
+            list.save();
+            res.redirect("/" + customListName);
+        } else {
+            renderIndex(res, data.name, data.items)
+        }
+    });
+}); 
+
+function renderIndex(res, listName, items) {
+    res.render("index.ejs", {
+        listName: listName,
+        items: items
+    }
+    )
+}
+
 app.post("/add", (req, res) => {
-    try {
-        const newItem = Item ({
-            name: req.body.task
-        });
-    
+    const listName = req.body.list;
+    const newItem = Item ({
+        name: req.body.task
+    });
+
+
+    if (listName === "Today"){
         newItem.save();    
-    } catch(e) {
-        console.log(e.message);
+        res.redirect('/');
+    } else {
+        const result = List.findOne({name: listName}).exec();
+        result.then(data => {
+            data.items.push(newItem);
+            data.save();
+            res.redirect('/' + listName);
+        });
     }
     
-    res.redirect('/')
 });
 
-app.get("/work", (req, res) => {
-    res.render(
-        "work.ejs",
-        {
-            items: workList,
+app.post("/delete", async (req, res) => {
+    const checkedItemId = req.body.checkbox
+    const listName = req.body.listName;
+    await sleep(600);
+    if (listName === "Today") {
+        if (checkedItemId != null) {
+            Item.findByIdAndDelete(checkedItemId).exec();
         }
-        );
+        res.redirect('/')
+    } else {
+        List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}).exec();
+        res.redirect('/' + listName)
+    }
+
+    
 });
 
-app.post("/addWork", (req, res) => {
-    workList.push(req.body.task);
-    res.redirect('/work')
-});
-
-app.get("/future", (req, res) => {
-    res.render(
-        "future.ejs",
-        {
-            items: futureList
-        }
-    );
-});
-
-app.post("/addFuture", (req, res) => {
-    futureList.push(req.body.task);
-    res.redirect('/future')
-});
+function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+}
 
 app.listen(port, (req, res) => {
     console.log(`Listen on port: ${port}`);
 });
-
-
-function getTodayDate() {
-    var date = new Date();
-    var day = date.getDay();
-    var month = getMonthName(date.getMonth());
-    var year = date.getFullYear();
-    return `${day} ${month} ${year}`;
-}
-
-
-function getMonthName(mounth) {
-    var monthName = "January";
-    switch(mounth) {
-        case 1:
-            monthName = "Fabuary";
-            break;
-        case 2:
-            monthName = "March";
-            break;
-        case 3:
-            monthName = "April";
-            break;
-        case 4:
-            monthName = "May";
-            break;
-        case 5:
-            monthName = "June";
-            break;
-        case 6:
-            monthName = "July";
-            break;
-        case 7:
-            monthName = "August";
-            break;
-        case 8:
-            monthName = "September";
-            break;
-        case 9:
-            monthName = "October";
-            break;
-        case 10:
-            monthName = "November";
-            break;
-        case 11:
-            monthName = "December";
-            break;
-    }
-    return monthName;
-}
- 

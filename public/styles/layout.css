@@ -30,3 +30,6 @@ body {
     width: auto;
 }
 
+.todoItem {
+    display: flex;
+}
